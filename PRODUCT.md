@@ -19,6 +19,20 @@ See `README.md` for install and run instructions when present.
 - Not claimed as production-ready unless README and tests prove it.
 - Mobile smoke / emulator acceptance is separate and toolchain-dependent.
 
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+web
+
+## Current product truth
+
+Inferred from the existing UI and README; user confirmation pending. This is a
+demo map that places simulated visitors from a fixed city list and stores the
+markers in this browser. It has no IP geolocation, live traffic, map provider,
+remote analytics, or geographic accuracy. The map should feel like a visual
+instrument for the simulation, not a live audience claim.
+
 ## Source README excerpt
 
 ```

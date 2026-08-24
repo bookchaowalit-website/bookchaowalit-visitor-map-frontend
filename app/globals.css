@@ -1,26 +1,72 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:root { --paper: #f1eee5; --ink: #1d2b2a; --navy: #2b4457; --green: #7d9b74; --orange: #d16c48; --line: #b9beb5; --map: #dfe5d7; }
+* { box-sizing: border-box; }
+html { background: var(--paper); }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif; }
+button { cursor: pointer; font: inherit; }
+.atlas-shell { max-width: 1280px; margin: 0 auto; padding: 28px 42px 34px; }
+.atlas-header { display: flex; align-items: center; gap: 18px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.atlas-mark { display: grid; place-items: center; width: 44px; height: 38px; background: var(--navy); color: #f3d494; font: 700 11px "Courier New", monospace; }
+.atlas-brand { display: grid; gap: 4px; }
+.atlas-brand strong, .atlas-brand span, .atlas-state, .atlas-kicker, .atlas-console span, .atlas-coordinate, .field-label, .register-title, .city-row, .atlas-footer, .atlas-note { font: 10px/1.2 "Courier New", monospace; letter-spacing: .12em; text-transform: uppercase; }
+.atlas-brand span, .atlas-state { color: #6d7772; }
+.atlas-state { margin-left: auto; }
+.atlas-state i { display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--orange); }
+.atlas-hero { display: grid; grid-template-columns: 1fr 220px; gap: 40px; align-items: center; min-height: 430px; padding: 90px 0 70px; }
+.atlas-kicker { margin: 0 0 22px; color: var(--orange); }
+.atlas-hero h1, .atlas-console-head h2 { margin: 0; font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; font-weight: 400; letter-spacing: -.06em; }
+.atlas-hero h1 { font-size: clamp(4.4rem, 9vw, 8rem); line-height: .84; }
+.atlas-hero h1 em { color: var(--green); font-style: italic; }
+.atlas-lede { max-width: 440px; margin: 34px 0 0; color: #586662; font-size: 15px; line-height: 1.55; }
+.atlas-coordinate { justify-self: end; display: grid; gap: 14px; width: 170px; border-top: 1px solid var(--navy); border-bottom: 1px solid var(--navy); padding: 17px 0; color: var(--orange); }
+.atlas-coordinate strong { color: var(--navy); font: 52px/.8 "Courier New", monospace; letter-spacing: -.09em; }
+.atlas-coordinate b { color: #6d7772; font-size: 8px; font-weight: 400; }
+.atlas-console { background: var(--navy); color: #f1eee5; padding: 38px 48px 34px; }
+.atlas-console-head { display: flex; justify-content: space-between; align-items: end; border-bottom: 1px solid rgba(241,238,229,.32); padding-bottom: 20px; }
+.atlas-console-head h2 { margin-top: 12px; font-size: clamp(2.8rem, 5vw, 5rem); line-height: .9; }
+.atlas-total { display: flex; align-items: center; gap: 12px; }
+.atlas-total strong { color: #f3d494; font: 44px/1 "Courier New", monospace; }
+.atlas-total span { color: #b8c3bc; font-size: 9px; }
+.atlas-actions { display: flex; gap: 18px; align-items: center; padding: 25px 0 22px; }
+.simulate-button, .clear-map { border: 0; padding: 13px 17px; }
+.simulate-button { background: #f3d494; color: var(--ink); font-weight: 700; }
+.simulate-button b { margin-left: 24px; font-size: 18px; }
+.clear-map { border: 1px solid rgba(241,238,229,.42); background: transparent; color: #f1eee5; }
+.atlas-actions p { margin: 0 0 0 auto; max-width: 330px; color: #b8c3bc; font-size: 11px; line-height: 1.4; }
+.atlas-field { position: relative; overflow: hidden; background: var(--map); color: rgba(43,68,87,.22); }
+.atlas-field svg { display: block; width: 100%; height: auto; min-height: 380px; }
+.land-shape { fill: rgba(125,155,116,.45); stroke: rgba(43,68,87,.28); stroke-width: .4; }
+.hit-dot { fill: var(--orange); stroke: #f6dc9c; stroke-width: .4; }
+.hit-dot.selected { fill: var(--navy); stroke: var(--orange); stroke-width: .65; }
+.field-label { position: absolute; left: 17px; color: rgba(29,43,42,.64); font-size: 8px; }
+.field-top { top: 15px; }
+.field-bottom { right: 17px; bottom: 15px; left: auto; }
+.atlas-register { margin-top: 24px; border-top: 1px solid rgba(241,238,229,.32); }
+.register-title { display: flex; justify-content: space-between; padding: 12px 0; color: #b8c3bc; }
+.city-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 50px 50px; gap: 10px; align-items: center; width: 100%; border: 0; border-top: 1px solid rgba(241,238,229,.19); background: transparent; color: #f1eee5; padding: 15px 0; text-align: left; }
+.city-row:hover, .city-row.selected { color: #f3d494; }
+.city-row span { color: #c87b5a; }
+.city-row strong { font-size: 13px; letter-spacing: .07em; }
+.city-row em { color: #b8c3bc; font-style: normal; }
+.city-row b { justify-self: end; color: #f3d494; font-weight: 400; }
+.atlas-note { display: flex; gap: 10px; align-items: center; margin: 23px 0 0; color: #b8c3bc; font-size: 9px; letter-spacing: .08em; text-transform: none; }
+.atlas-note i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--orange); }
+.atlas-footer { display: flex; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 18px; color: #6d7772; }
+.atlas-footer span:last-child { color: var(--orange); }
+@media (max-width: 760px) {
+  .atlas-shell { padding: 18px 20px 26px; }
+  .atlas-header { gap: 11px; }
+  .atlas-state { display: none; }
+  .atlas-hero { display: block; min-height: auto; padding: 72px 0 60px; }
+  .atlas-hero h1 { font-size: clamp(3.8rem, 17vw, 6rem); }
+  .atlas-coordinate { margin: 48px 12px 0 auto; }
+  .atlas-console { padding: 28px 20px; }
+  .atlas-console-head { align-items: start; }
+  .atlas-console-head h2 { font-size: 3.1rem; }
+  .atlas-actions { flex-wrap: wrap; }
+  .atlas-actions p { flex-basis: 100%; margin: 3px 0 0; }
+  .atlas-field svg { min-height: 270px; }
+  .city-row { grid-template-columns: 30px minmax(0, 1fr) 38px 38px; }
+  .atlas-footer { display: grid; gap: 9px; }
 }

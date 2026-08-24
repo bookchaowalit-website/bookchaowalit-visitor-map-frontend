@@ -1,130 +1,102 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-function Shell({
-  title,
-  subtitle,
-  badge = "Portfolio demo · local-only",
-  children,
-}: {
-  title: string;
-  subtitle: string;
-  badge?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900 dark:bg-black dark:text-zinc-100">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <header className="mb-8">
-          <p className="text-xs font-medium uppercase tracking-wider text-zinc-500">{badge}</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">{title}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">{subtitle}</p>
-        </header>
-        {children}
-        <footer className="mt-10 border-t border-zinc-200 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
-          Honest demo: no multi-tenant backend. State (if any) stays in this browser.
-        </footer>
-      </div>
-    </div>
-  );
-}
+type City = { city: string; country: string; x: number; y: number };
+type Hit = City & { id: string };
 
-function Button({
-  children,
-  onClick,
-  variant = "primary",
-  disabled,
-  type = "button",
-  className = "",
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  variant?: "primary" | "secondary" | "ghost" | "danger";
-  disabled?: boolean;
-  type?: "button" | "submit";
-  className?: string;
-}) {
-  const base =
-    "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition disabled:opacity-50 " +
-    className;
-  const styles =
-    variant === "primary"
-      ? "bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900"
-      : variant === "secondary"
-        ? "bg-white text-zinc-900 ring-1 ring-zinc-200 hover:bg-zinc-100 dark:bg-zinc-900 dark:text-zinc-100 dark:ring-zinc-700"
-        : variant === "danger"
-          ? "bg-red-600 text-white hover:bg-red-500"
-          : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-900";
-  return (
-    <button type={type} disabled={disabled} onClick={onClick} className={`${base} ${styles}`}>
-      {children}
-    </button>
-  );
-}
+const CITIES: City[] = [
+  { city: "Bangkok", country: "TH", x: 67, y: 57 },
+  { city: "Tokyo", country: "JP", x: 79, y: 43 },
+  { city: "Berlin", country: "DE", x: 50, y: 38 },
+  { city: "San Francisco", country: "US", x: 18, y: 43 },
+  { city: "Sydney", country: "AU", x: 78, y: 75 },
+];
+const STORAGE_KEY = "book-visitor-map-v2";
 
-const inputClass =
-  "w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm outline-none ring-zinc-400 focus:ring-2 dark:border-zinc-700 dark:bg-zinc-950";
+export default function VisitorMap() {
+  const [hits, setHits] = useState<Hit[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
 
-function useLocalStorage<T>(key: string, initial: T) {
-  const [value, setValue] = useState<T>(initial);
-  const [ready, setReady] = useState(false);
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(key);
-      if (raw != null) setValue(JSON.parse(raw) as T);
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) setHits(JSON.parse(saved) as Hit[]);
     } catch {
-      /* ignore */
+      setHits([]);
     }
-    setReady(true);
-  }, [key]);
+  }, []);
+
   useEffect(() => {
-    if (!ready) return;
-    localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value, ready]);
-  return [value, setValue] as const;
-}
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(hits));
+  }, [hits]);
 
-function uid() {
-  return crypto.randomUUID();
-}
+  const counts = useMemo(() => CITIES.map((city) => ({
+    ...city,
+    count: hits.filter((hit) => hit.city === city.city).length,
+  })).sort((a, b) => b.count - a.count), [hits]);
 
-async function copyText(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
+  function simulateVisitor() {
+    const city = CITIES[Math.floor(Math.random() * CITIES.length)];
+    const hit = { ...city, id: crypto.randomUUID() };
+    setHits((current) => [...current, hit].slice(-40));
+    setSelected(city.city);
   }
-}
 
-
-type Hit = { id: string; city: string; country: string; x: number; y: number };
-const CITIES = [
-  { city: "Bangkok", country: "TH", x: 72, y: 58 },
-  { city: "Tokyo", country: "JP", x: 82, y: 42 },
-  { city: "Berlin", country: "DE", x: 52, y: 38 },
-  { city: "SF", country: "US", x: 18, y: 42 },
-  { city: "Sydney", country: "AU", x: 88, y: 78 },
-];
-export default function Home() {
-  const [hits, setHits] = useLocalStorage<Hit[]>("visitor-map-v1", []);
-  const add = () => {
-    const c = CITIES[Math.floor(Math.random() * CITIES.length)];
-    setHits((p) => [{ id: uid(), ...c }, ...p].slice(0, 40));
-  };
   return (
-    <Shell title="Visitor Map" subtitle="Simulated visitor dots — demo only, not real analytics geo IP.">
-      <div className="mb-3 flex gap-2">
-        <Button onClick={add}>Simulate visitor</Button>
-        <Button variant="secondary" onClick={() => setHits([])}>Clear</Button>
-      </div>
-      <div className="relative aspect-[2/1] overflow-hidden rounded-xl border border-zinc-200 bg-gradient-to-b from-sky-100 to-emerald-100 dark:border-zinc-800 dark:from-zinc-900 dark:to-zinc-950">
-        {hits.map((h) => (
-          <div key={h.id} className="absolute h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-rose-500 shadow" style={{ left: h.x + "%", top: h.y + "%" }} title={h.city} />
-        ))}
-        <div className="absolute bottom-2 left-2 rounded bg-white/80 px-2 py-1 text-xs dark:bg-black/50">{hits.length} hits (demo)</div>
-      </div>
-    </Shell>
+    <main className="atlas-shell">
+      <header className="atlas-header">
+        <div className="atlas-mark">B/13</div>
+        <div className="atlas-brand"><strong>VISITOR ATLAS</strong><span>SIMULATION / FIXED CITY SET</span></div>
+        <div className="atlas-state"><i /> SYNTHETIC SIGNAL · NOT LIVE</div>
+      </header>
+
+      <section className="atlas-hero">
+        <div>
+          <p className="atlas-kicker">BOOKCHAOWALIT / SMALL AUDIENCE INSTRUMENT</p>
+          <h1>Read the room,<br /><em>lightly.</em></h1>
+          <p className="atlas-lede">A quiet projection of simulated visitors — enough to test a map interaction, never enough to pretend it is analytics.</p>
+        </div>
+        <div className="atlas-coordinate" aria-label="Synthetic map coordinates"><span>FIELD</span><strong>13°</strong><b>FIXED / LOCAL</b></div>
+      </section>
+
+      <section className="atlas-console" aria-label="Visitor map simulation">
+        <div className="atlas-console-head">
+          <div><span>PROJECTION / 001</span><h2>Where the dots gather.</h2></div>
+          <div className="atlas-total"><strong>{String(hits.length).padStart(2, "0")}</strong><span>SIMULATED<br />VISITORS</span></div>
+        </div>
+        <div className="atlas-actions">
+          <button className="simulate-button" onClick={simulateVisitor}>Simulate visitor <b>＋</b></button>
+          <button className="clear-map" onClick={() => { setHits([]); setSelected(null); }}>Clear field</button>
+          <p>Each click selects one fixed city. The marker count remains in this browser.</p>
+        </div>
+        <div className="atlas-field">
+          <svg viewBox="0 0 100 84" role="img" aria-label="Abstract world projection showing simulated visitor dots">
+            <defs>
+              <pattern id="atlas-grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth=".16" /></pattern>
+            </defs>
+            <rect width="100" height="84" fill="url(#atlas-grid)" />
+            <path className="land-shape" d="M8 21 C15 12 28 12 33 18 L39 25 34 31 28 29 23 35 16 31 10 34 5 28Z" />
+            <path className="land-shape" d="M44 15 L54 12 60 17 57 25 63 30 61 39 55 42 51 35 46 34 44 27 39 24Z" />
+            <path className="land-shape" d="M64 16 L77 12 89 19 94 28 86 34 79 30 73 35 67 29 61 27Z" />
+            <path className="land-shape" d="M59 46 L68 49 73 58 69 66 65 74 59 69 56 58Z" />
+            {hits.map((hit) => <circle key={hit.id} className={selected === hit.city ? "hit-dot selected" : "hit-dot"} cx={hit.x} cy={hit.y} r={selected === hit.city ? 1.8 : 1.15}><title>{hit.city}, {hit.country}</title></circle>)}
+          </svg>
+          <div className="field-label field-top">SYNTHETIC PROJECTION / LAT–LON OMITTED</div>
+          <div className="field-label field-bottom">{selected ? `LAST MARK · ${selected.toUpperCase()}` : "NO LAST MARK"}</div>
+        </div>
+        <div className="atlas-register">
+          <div className="register-title"><span>CITY REGISTER</span><span>MARKS / 40 MAX</span></div>
+          {counts.map((city, index) => (
+            <button key={city.city} className={selected === city.city ? "city-row selected" : "city-row"} onClick={() => setSelected(city.city)}>
+              <span>{String(index + 1).padStart(2, "0")}</span><strong>{city.city}</strong><em>{city.country}</em><b>{String(city.count).padStart(2, "0")}</b>
+            </button>
+          ))}
+        </div>
+        <p className="atlas-note"><i /> Demo boundary: no IP lookup, map provider, remote analytics, or geographic accuracy is involved.</p>
+      </section>
+
+      <footer className="atlas-footer"><span>BOOKCHAOWALIT / VISITOR MAP</span><span>LOCAL SIMULATION · NO GEO CLAIM</span></footer>
+    </main>
   );
 }
