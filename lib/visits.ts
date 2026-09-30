@@ -20,16 +20,20 @@ export const CITIES: City[] = [
 export function cityForTimeZone(timeZone: string): City | null {
   const zone = timeZone.trim();
   const byName = (name: string) => CITIES.find((city) => city.city === name) ?? null;
-  if (/^(Asia\/(Tokyo|Seoul|Pyongyang|Sakhalin|Vladivostok)|Japan)$/.test(zone)) return byName("Tokyo");
+  if (/^(Asia\/(Tokyo|Seoul|Pyongyang|Sakhalin|Vladivostok)|Japan|ROK)$/.test(zone)) return byName("Tokyo");
   if (/^(Australia|Pacific\/(Auckland|Fiji|Noumea)|NZ)/.test(zone)) return byName("Sydney");
-  if (/^(Asia|Indian)\//.test(zone)) return byName("Bangkok");
+  // Legacy link names some browsers still report (Singapore, Hongkong, PRC, ROC).
+  if (/^(Asia|Indian)\//.test(zone) || /^(Singapore|Hongkong|PRC|ROC)$/.test(zone)) return byName("Bangkok");
+  // Atlantic islands on the American side belong with the Americas, not Europe.
+  if (/^Atlantic\/(Bermuda|Stanley|South_Georgia)$/.test(zone)) return byName("San Francisco");
   if (/^(Europe|Africa|Atlantic)\//.test(zone)) return byName("Berlin");
   if (/^(America|US|Canada|Pacific\/Honolulu)/.test(zone)) return byName("San Francisco");
   return null;
 }
 
 export function simulatedHit(random: number, id: string): Hit {
-  const index = Math.min(CITIES.length - 1, Math.max(0, Math.floor(random * CITIES.length)));
+  const scaled = Math.floor(random * CITIES.length);
+  const index = Number.isNaN(scaled) ? 0 : Math.min(CITIES.length - 1, Math.max(0, scaled));
   return { ...CITIES[index], id, source: "simulated" };
 }
 
@@ -61,7 +65,8 @@ export function parseHits(raw: string | null): Hit[] | null {
       if (typeof item !== "object" || item === null) continue;
       const record = item as Record<string, unknown>;
       const city = CITIES.find((candidate) => candidate.city === record.city);
-      if (!city || typeof record.id !== "string") continue;
+      // Ids key the map dots; a repeated id keeps only its first hit.
+      if (!city || typeof record.id !== "string" || hits.some((hit) => hit.id === record.id)) continue;
       hits.push({ ...city, id: record.id, source: record.source === "self" ? "self" : "simulated" });
     }
     return hits.slice(-MAX_HITS);

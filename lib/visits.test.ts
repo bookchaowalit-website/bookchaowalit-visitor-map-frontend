@@ -45,3 +45,27 @@ describe("hits", () => {
     ]);
   });
 });
+
+describe("edge cases", () => {
+  it("maps legacy time-zone link names instead of dropping the visit", () => {
+    expect(cityForTimeZone("Singapore")?.city).toBe("Bangkok");
+    expect(cityForTimeZone("Hongkong")?.city).toBe("Bangkok");
+    expect(cityForTimeZone("PRC")?.city).toBe("Bangkok");
+    expect(cityForTimeZone("ROK")?.city).toBe("Tokyo");
+  });
+
+  it("puts American-side Atlantic islands in the Americas, not Europe", () => {
+    expect(cityForTimeZone("Atlantic/Bermuda")?.city).toBe("San Francisco");
+    expect(cityForTimeZone("Atlantic/Stanley")?.city).toBe("San Francisco");
+    expect(cityForTimeZone("Atlantic/Reykjavik")?.city).toBe("Berlin");
+  });
+
+  it("always returns a real city for a NaN random value", () => {
+    expect(simulatedHit(Number.NaN, "n").city).toBe("Bangkok");
+  });
+
+  it("drops stored hits that repeat an id", () => {
+    const raw = JSON.stringify([{ id: "a", city: "Tokyo" }, { id: "a", city: "Berlin" }, { id: "b", city: "Berlin" }]);
+    expect(parseHits(raw)?.map((hit) => hit.city)).toEqual(["Tokyo", "Berlin"]);
+  });
+});

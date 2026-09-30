@@ -21,3 +21,15 @@ Score: 6/10 (was 4/10) — the atlas can now record the viewer's own (time-zone)
 ## Done in this pass (pass 2)
 
 - Canonical host is config-driven: `lib/site.ts` resolves `NEXT_PUBLIC_SITE_URL` (validated, clear error on a non-http(s) value) and feeds `metadataBase`, generated `app/sitemap.ts` / `app/robots.ts` and the MCP `get_app_info` URL; removed the stale template `public/sitemap.xml` / `robots.txt` (they pointed at `bookchaowalit.com` and a `*.vercel.app` name that differs from the project URL). Tested in `lib/site.test.ts`.
+
+## Done in this pass (pass 3)
+- Edge-case pass on `lib/visits.ts` (regression tests in `lib/visits.test.ts`):
+  - `cityForTimeZone` returned null for legacy link names browsers can still
+    report (`Singapore`, `Hongkong`, `PRC`, `ROC`, `ROK`), so the "add my
+    visit" action did nothing; they now map to Bangkok / Tokyo.
+  - `Atlantic/Bermuda`, `Atlantic/Stanley`, `Atlantic/South_Georgia` were
+    placed in Berlin; they now map to the Americas marker.
+  - `simulatedHit(NaN)` produced a hit with no city/coordinates; it now falls
+    back to the first city.
+  - `parseHits` kept stored hits with repeated ids (duplicate SVG keys); only
+    the first is kept.
