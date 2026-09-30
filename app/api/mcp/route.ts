@@ -1,11 +1,12 @@
 import { handleRpc } from "@/lib/mcp";
+import { SITE_URL } from "@/lib/site";
 
 export const runtime = "edge";
 
 const APP = {
   name: "Visitor Map",
   description: "A local visitor atlas with simulated and self-reported marks.",
-  url: "https://bookchaowalit-visitor-map-frontend.vercel.app",
+  url: SITE_URL,
 };
 
 export async function POST(request: Request) {
