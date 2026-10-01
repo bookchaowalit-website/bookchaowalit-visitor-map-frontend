@@ -1,12 +1,15 @@
 # Visitor Map
 
-Simulated visitor dots.
+A local visitor atlas: mark your own visit (snapped to a fixed city from your browser time zone) or simulate visitors.
 
 ## Features
-- Interactive UI
+- "Mark my visit" uses only `Intl` time zone, no IP lookup or geolocation prompt
+- Simulated visitors for demoing the map
+- City register with counts (yours vs simulated), last 40 marks kept in localStorage
 
 ## Limitations
-- Demo-grade
+- Five fixed cities on an abstract projection; not real geography or analytics
+- Marks are per-browser, not shared across visitors
 
 ## Run
 ```bash
@@ -16,3 +19,19 @@ npm run dev
 
 ## Honesty
 Portfolio demo. Not multi-tenant SaaS. Prefer local-only state over fake production claims.
+
+## Checks
+
+```bash
+npm ci
+npm run lint
+npm run typecheck
+npm test
+npm run build
+```
+
+CI runs the same checks on every push (`.github/workflows/ci.yml`).
+
+## Configuration
+
+- `NEXT_PUBLIC_SITE_URL` (optional): canonical origin used for metadata, `/sitemap.xml`, `/robots.txt` and the MCP app info. Defaults to `https://bookchaowalit-visitor-map-frontend.vercel.app`; must be an absolute http(s) URL.

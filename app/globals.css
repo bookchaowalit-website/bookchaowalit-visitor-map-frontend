@@ -70,3 +70,4 @@ button { cursor: pointer; font: inherit; }
   .city-row { grid-template-columns: 30px minmax(0, 1fr) 38px 38px; }
   .atlas-footer { display: grid; gap: 9px; }
 }
+.hit-dot.self { fill: var(--navy); stroke: #f6dc9c; }
